@@ -2,9 +2,9 @@
 
 ******
 
-##Usage
+##必要的修改
 
-    修改zabbix 用户名 密码和api_jsonrpc.php链接 
+    修改脚本中zabbix 用户名 密码 以及 实际api_jsonrpc.php链接 
     安装requests模块
     pip install requests
 
