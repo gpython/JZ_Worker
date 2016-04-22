@@ -4,9 +4,9 @@
 
 ##Usage
 
-修改zabbix 用户名 密码和api_jsonrpc.php链接 
-
-pip install requests
+  修改zabbix 用户名 密码和api_jsonrpc.php链接 
+  安装requests模块
+  pip install requests
 
 zabbix_local.py
 
@@ -14,7 +14,7 @@ zabbix_local.py
 
 zabbix_hostgroup_screen_local.py
 
-  将多个主机组 或 多个主机的graph添加到screen 解放双手
+  将多个主机组 或 多个主机的所有graph添加到screen 若已经存在相应的主机的screen 先删除在执行 
 
 
 
