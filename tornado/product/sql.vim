@@ -184,27 +184,6 @@ db.tablelog.group({
   }
 })
 
-#################################################
-CREATE TABLE `jz_orderinfo` (
-  `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '自增长id',
-  `pid` varchar(255) NOT NULL COMMENT '字符金额',
-  `pay_type` int(11) NOT NULL COMMENT '支付渠道类型',
-  `total_good_awards_num` int(11) NOT NULL COMMENT 'awards总数',
-  `total_price` int(11) NOT NULL COMMENT '总金额',
-  `total_count` int(11) unsigned NOT NULL COMMENT '总次数',
-  `date` int(11) NOT NULL COMMENT '时间戳',
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8
-
-CREATE TABLE `jz_orderinfo_paytype` (
-  `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '自增id',
-  `pay_type` int(11) NOT NULL COMMENT '支付渠道类型',
-  `total_good_awards_num` int(11) NOT NULL COMMENT '当天awards总数',
-  `total_price` int(11) NOT NULL COMMENT '当天金额总数',
-  `total_count` int(11) NOT NULL COMMENT '当天总次数',
-  `date` int(11) NOT NULL COMMENT '时间戳',
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8
 
 
 
