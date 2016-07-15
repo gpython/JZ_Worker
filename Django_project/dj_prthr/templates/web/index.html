@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>{{ title }}</title>
+</head>
+<body>
+  <h1>Host Info</h1>
+  <table>
+  {% for item in data %}
+    <tr>
+      <td>{{ item.hostname }}</td>
+      <td>{{ item.ip }}</td>
+    </tr>
+  {% endfor %}
+  </table>
+  <div>总条数{{ count }}</div>
+  <div>{{ page_list }}</div>
+</body>
+</html>

@@ -1,0 +1,36 @@
+
+{% extends "base/base.html" %}
+
+{%block page_container %}
+<div class="row">
+  <div class="col-md-8 left-content-panel">
+    <div class="content-box">
+      {% for article in articles reversed %}
+      <div class="row article-box">
+        <div class="col-md-4 article-head-img">
+          <img src="{{ article.head_img}}" width="200" alt="">
+        </div>
+        <div class="col-md-4 article-summary">
+          <a href="{% url 'article_detail' article.id %}">{{ article.title }}</a> | {{ request.path }}
+          <div class="article-attr">
+            <ul class="list-inline">
+              <li>{{ article.author.name }}</li>
+              <li>{{ article.publish_date }}</li>
+              <li>ThumbUp:{{ article.thumbup_set.select_related.count }}</li>
+              <li>Comment:{{ article.comment_set.select_related.count }}</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <hr>
+      {% endfor %}
+    </div>
+  </div>
+  <div class="col-md-4 right-content-panel">
+
+  </div>
+</div>
+
+
+
+{% endblock %}

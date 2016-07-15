@@ -1,0 +1,22 @@
+{% extends "base/base.html" %}
+{% block title %}{{ article_detail.title }}{% endblock %}
+
+
+{%block page_container %}
+<div class="row">
+  <div class="col-md-8 left-content-panel">
+    <div class="content-box">
+
+    <h3>{{ article_detail.title }}</h3>
+    <p>{{ article_detail.content|safe }}</p>
+
+    </div>
+  </div>
+  <div class="col-md-4 right-content-panel">
+
+  </div>
+</div>
+
+
+
+{% endblock %}

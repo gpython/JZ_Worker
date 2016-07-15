@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>{{ title }}</title>
+</head>
+<body>
+  {{ user }}
+  <table border=1>
+    {% for item in data %}
+    <tr>
+      <td>{{ item.id }}</td>
+      <td>{{ item.hostname }}</td>
+      <td>{{ item.create_time|date:"Y-m-d" }}</td>
+      <td>{{ item.update_time|date:"Y-m-d" }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+</body>
+</html>

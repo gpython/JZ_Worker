@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<!-- saved from url=(0048)http://v3.bootcss.com/examples/navbar-fixed-top/ -->
+<html lang="zh-CN" class="cye-disabled cye-lm"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- 上述3个meta标签*必须*放在最前面，任何其他内容都*必须*跟随其后！ -->
+  <meta name="description" content="">
+  <meta name="author" content="">
+  <link rel="icon" href="http://v3.bootcss.com/favicon.ico">
+  <title>{% block title %}{% endblock %}</title>
+
+  <!-- Bootstrap core CSS -->
+  <link href="/static/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- Custom styles for this template -->
+  <link href="/static/css/navbar-fixed-top.css" rel="stylesheet">
+
+  <!-- Just for debugging purposes. Don't actually copy these 2 lines! -->
+  <!--[if lt IE 9]><script src="../../assets/js/ie8-responsive-file-warning.js"></script><![endif]-->
+  <script src="/static/js/ie-emulation-modes-warning.js"></script>
+  <style id="nightModeStyle">
+    html.cye-enabled.cye-nm:not(*:-webkit-full-screen) body,
+    html.cye-enabled.cye-nm:not(*:-webkit-full-screen) #cye-workaround-body {-webkit-filter:contrast(150%) brightness(51%) invert(1);}
+  </style>
+  {% block head_style %}
+  {% endblock %}
+  {% block head_script %}
+  {% endblock %}
+
+
+
+  <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+  <!--[if lt IE 9]>
+    <script src="//cdn.bootcss.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+    <script src="//cdn.bootcss.com/respond.js/1.4.2/respond.min.js"></script>
+  <![endif]-->
+  </head>
+  <div id="cyeBlackMaskLayer" style="position: fixed; width: 1980px; height: 1080px; z-index: -2147483648; background-color: rgb(19, 19, 19);"></div>
+  <body>
+
+    <!-- Fixed navbar -->
+    <nav class="navbar navbar-default navbar-fixed-top">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="#">Project</a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+          <ul class="nav navbar-nav">
+            <li class=""><a href="{% url 'index' %}">Web</a></li>
+            <li><a href="{% url 'category' 1 %}">Django</a></li>
+            <li><a href="{% url 'category' 2 %}">Flask</a></li>
+
+          </ul>
+          <ul class="nav navbar-nav navbar-right">
+          {% if request.user.is_authenticated %}
+            <li><a href="{% url 'logout' %}">注销</a></li>
+            <li class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">{{ request.user.userprofile.name }} <span class="caret"></span></a>
+              <ul class="dropdown-menu">
+                <li><a href="{% url 'new_article' %}">New_Article</a></li>
+                <li><a href="#">Another action</a></li>
+                <li><a href="#">Something else here</a></li>
+                <li role="separator" class="divider"></li>
+                <li class="dropdown-header">Nav header</li>
+                <li><a href="#">Separated link</a></li>
+                <li><a href="#">One more separated link</a></li>
+              </ul>
+            </li>
+          {% else %}
+            <li><a href="{% url 'login' %}">登录</a></li>
+            <li><a href="{% url 'reg' %}">注册</a></li>
+          {% endif %}
+          </ul>
+        </div><!--/.nav-collapse -->
+      </div>
+    </nav>
+
+    <div class="container">
+    {% block page_container %}
+
+    {% endblock %}
+
+    </div>
+
+
+
+    <script src="/static/js/jquery.min.js"></script>
+    <script src="/static/js/bootstrap.min.js"></script>
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <script src="/static/js/ie10-viewport-bug-workaround.js"></script>
+    <script>
+    $(document).ready(function(){
+      var menu = $("#navbar a[href='{{ request.path }}']")[0];
+      $(menu).parent().addClass("active");
+      $(menu).parent().siblings().removeClass("active");
+    })
+    </script>
+</body>
+<div id="cye-workaround-body" style="position: absolute; left: 0px; top: 0px; z-index: -2147483646; height: 2000px; width: 1903px; background: none 0% 0% / auto repeat scroll padding-box border-box rgb(255, 255, 255);"></div><div id="cye-workaround-body-image" style="position: absolute; left: 0px; top: 0px; z-index: -2147483645; height: 2000px; width: 1903px; background: none 0% 0% / auto repeat scroll padding-box border-box rgba(0, 0, 0, 0);"></div>
+</html>

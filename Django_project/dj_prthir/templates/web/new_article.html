@@ -1,0 +1,38 @@
+{% extends "base/base.html" %}
+
+{% block title %}
+  {{ title }}
+{% endblock %}
+
+{% block head_style %}
+<link href="" rel="stylesheet">
+{% endblock %}
+{% block head_script %}
+<script src='/static/js/ckeditor.js'></script>
+{% endblock %}
+
+{%block page_container %}
+{% if new_article_obj %}
+  <h3>Article {{ new_article_obj.title }} Published > <a href="{% url 'article_detail' new_article_obj.id %}">{{ new_article_obj.title }}</a></h3>
+{% else %}
+<form enctype="multipart/form-data" action="{% url 'new_article' %}" method="POST">
+  {% csrf_token %}
+  <input type="text" name="title" class="form-control" placeholder="Article Title">
+  <select name="category_id" class="form-control" id="category_id">
+    {% for category in category_list %}
+      <option value="{{ category.id }}">{{ category.name }}</option>
+    {% endfor %}
+  </select>
+  <input type="text" name="summary" class="form-control" placeholder="Article Summary">
+  <input type="text" name="head_img" placeholder="image links"class="form-control">
+  <input type="file" class="form-control">
+  <textarea name="content" id="content"  rows="10" class="form-control"></textarea>
+  <script>
+    CKEDITOR.replace('content')
+  </script>
+  <div class="form-group ">
+    <button type="submit" class="btn btn-primary btn-lg btn-block login-button">Submit</button>
+  </div>
+</form>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>{{ title }}</title>
+</head>
+<body>
+  <input type="text" id="name">
+  <input type="button" value="submit_01" onclick="do_ajax()">
+  <script src="/static/js/jquery.min.js"></script>
+  <script>
+  function do_ajax(){
+    var temp = $('#name').val();
+    $.ajax({
+      url:'/web/ajax/',
+      type: 'POST',
+      data: {dat: temp},
+      success: function(arg){
+        console.log(arg);
+        var json_obj = $.parseJSON(arg);
+        console.log(json_obj);
+        console.log(json_obj.data);
+        console.log(json_obj.status);
+        console.log(json_obj.msg);
+        console.log(json_obj.rev_data);
+      },
+      error: function(){
+        console.log('failed');
+      },
+    });
+  }
+  </script>
+</body>
+</html>
