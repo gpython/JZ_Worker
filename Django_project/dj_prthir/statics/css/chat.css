@@ -1,0 +1,90 @@
+
+.pull_right.me {
+  float: right;
+  text-align: right;
+  clear: right;
+  padding-right: 1ex;
+}
+.pull_right {
+  margin-bottom: 16px;
+  float: left;
+  width: 100%;
+}
+
+.pull_right.me .content {
+  overflow: hidden;
+  padding: 0 4px;
+}
+
+
+.pull_left.other {
+  float: left;
+  text-align: left;
+  clear: left;
+  padding-left: 1ex;
+}
+.pull_left {
+  margin-bottom: 16px;
+  float: right;
+  width: 100%;
+}
+
+.pull_left.other .content {
+  overflow: hidden;
+  padding: 0 4px;
+}
+
+
+.bubble.bubble-primary {
+  background-color: #b2e281;
+}
+.bubble {
+  max-width: 500px;
+  min-height: 1em;
+  display: inline-block;
+  vertical-align: top;
+  position: relative;
+  text-align: left;
+  font-size: 14px;
+  border-radius: 3px;
+  -moz-border-radius: 3px;
+  -webkit-border-radius: 3px;
+#  margin: 0 10px;
+}
+.bubble_cont {
+  word-wrap: break-word;
+  word-break: break-all;
+  min-height: 25px;
+}
+.bubble_cont .plain {
+  padding: 9px 13px;
+}
+pre{
+  background-color: #b2e281;
+  margin: 0;
+  font-family: inherit;
+  font-size: inherit;
+  white-space: pre-wrap;
+  word-break: initial;
+}
+.pull_right.me .avatat{
+  float: right;
+}
+.pull_right .avatar {
+  float: right;
+  width: 40px;
+  height: 40px;
+  border-radius: 2px;
+  cursor: pointer;
+}
+
+.pull_left.other .avatat{
+  float: left;
+}
+.pull_left .avatar {
+  float: left;
+  width: 40px;
+  height: 40px;
+  border-radius: 2px;
+  cursor: pointer;
+}

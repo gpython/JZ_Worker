@@ -56,6 +56,7 @@
             <li class=""><a href="{% url 'index' %}">Web</a></li>
             <li><a href="{% url 'category' 1 %}">Django</a></li>
             <li><a href="{% url 'category' 2 %}">Flask</a></li>
+            <li><a href="{% url 'dashboard' %}">Chat</a></li>
 
           </ul>
           <ul class="nav navbar-nav navbar-right">
@@ -102,6 +103,8 @@
       $(menu).parent().siblings().removeClass("active");
     })
     </script>
+    {% block end_script %}
+    {% endblock %}
 </body>
 <div id="cye-workaround-body" style="position: absolute; left: 0px; top: 0px; z-index: -2147483646; height: 2000px; width: 1903px; background: none 0% 0% / auto repeat scroll padding-box border-box rgb(255, 255, 255);"></div><div id="cye-workaround-body-image" style="position: absolute; left: 0px; top: 0px; z-index: -2147483645; height: 2000px; width: 1903px; background: none 0% 0% / auto repeat scroll padding-box border-box rgba(0, 0, 0, 0);"></div>
 </html>

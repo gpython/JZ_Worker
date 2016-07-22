@@ -24,6 +24,7 @@ class UserProfile(models.Model):
   user = models.OneToOneField(User)
   name = models.CharField(max_length=32)
   groups = models.ManyToManyField('UserGroup')
+  friend = models.ManyToManyField('self', blank=True, related_name='my_friend', verbose_name=u"用户朋友关系")
   def __unicode__(self):
     return self.name
 
