@@ -28,7 +28,7 @@
         {% csrf_token %}
         <input class="form-control" id="input-edit" placeholder="Enter chat message" type="text">
         <span class="input-group-btn form-group">
-          <button class="btn btn-default" type="button">
+          <button class="btn btn-default" type="button" onclick="MsgSendBtn()">
           Send
           </button>
         </span>
@@ -61,40 +61,40 @@
 
 {% block end_script %}
 <script>
-$(document).ready(function(){
-  //OpenChatWindow(obj);
-  /*
-  $('#contact-list li').click(function(){
-    $(this).addClass("active");
-    $(this).siblings().removeClass("active");
-    SwitchChatBox(this);
-  }); //(#contact-list a)
-  */
+//all_dialog_sessions[contact-type][contact-id]
+var all_dialog_sessions = {
+  'single': {},
+  'group': {},
+};
 
-  refreshMsgs = setInterval(function(){
-    GetNewMsg();
-  }, 3000);
+$(document).ready(function(){
+
+  GetNewMsg();
 
   $("div").delegate("#input-edit", "keydown", function(e){
     if(e.which == 13){
-      var msg_text = $("#input-edit").val();
-      if($.trim(msg_text).length > 0){
-        console.log(msg_text);
-        AddSendMsgIntoBox(msg_text);
-        SendMsg(msg_text);
-        $("#input-edit").val("");
-      }
+      MsgSendBtn();
     }
   });
+
 }); //end of ready
+
+function MsgSendBtn(){
+  var msg_text = $("#input-edit").val();
+  if($.trim(msg_text).length > 0){
+    console.log(msg_text);
+    AddSendMsgIntoBox(msg_text);
+    SendMsg(msg_text);
+    $("#input-edit").val("");
+  }
+}
 
 function AddSendMsgIntoBox(msg_text){
   var msg_div = "<div class='pull_right me'>" +
-  "<div class=''> <img class='avatar' src="+'https://wx.qq.com/cgi-bin/mmwebwx-bin/webwxgeticon?seq=132032543&username=@c3712af7c25223d885cab80c7af19a0ea78beac9e76411a64f692dcce9b2c4dd&skey=@crypt_7afaa10_0b38f4ec8a154e365224461473071174'+"></div>" +
+  "<div class=''> <img class='avatar' src="+'https://img3.doubanio.com/icon/u2927160-5.jpg'+"></div>" +
     "<div class='content'><h5 style='margin-top: 1px;'> {{ request.user.userprofile.name }} </h5> " +
     "<div class='bubble bubble-primary'><div class='bubble-content'><div class='plain'><pre>" + msg_text + "</pre></div></div></div></div>" +
   "</div>";
-
   $("#dialog-box-content").append(msg_div);
   $("#dialog-box-content").animate({scrollTop: $('#dialog-box-content')[0].scrollHeight}, 500);
 }
@@ -110,7 +110,7 @@ function SendMsg(msg){
   $.post("{% url 'chat_send_msg' %}",
     {'data': JSON.stringify(msg_dict), 'csrfmiddlewaretoken': $("input[name='csrfmiddlewaretoken']").val()},
     function(callback){
-      console.log(callback);
+      console.log("callback: " + callback);
     })
 }
 
@@ -121,9 +121,15 @@ function GetNewMsg(){
   $.get("{% url 'get_new_msg' %}", {'uid': "{{ request.user.userprofile.id }}"}, function(callback){
     console.log(callback);
     callback = JSON.parse(callback);
+
     $.each(callback, function(index, msg){
       if(msg.from_id == current_contact_id){//current dialog windows
 
+        //var msg_count_ele = $("#contact-list ul li[contact-id='"+ current_contact_id +"']").find(".badge");
+        //if (parseInt(msg_count_ele.text()) > 0){
+        //  msg_count_ele.text(0);
+        //  msg_count_ele.addClass("hide");
+        //}
         var msg_div = "<div class='pull_left other'>" +
         "<div class=''> <img class='avatar' src='https://img3.doubanio.com/icon/u37044537-304.jpg'></div>" +
           "<div class='content'><h5 style='margin-top: 1px;'>"+ current_contact_name + msg.dtime +"</h5> " +
@@ -133,14 +139,24 @@ function GetNewMsg(){
         $("#dialog-box-content").append(msg_div);
         $("#dialog-box-content").animate({scrollTop: $('#dialog-box-content')[0].scrollHeight}, 500);
       }else{
-        var msg_count_ele = $("#contact-list ul li[contact-id='"+ msg.from_id +"'] span");
-        msg_count_ele.text(parseInt(msg_count_ele.find(".badge").text()) + 1);
-        console.log(msg_count_ele.find(".badge").text()+"------");
-        msg_count_ele.find(".badge").removeClass("hide");
+        var msg_count_ele = $("#contact-list ul li[contact-id='"+ msg.from_id +"']").find(".badge");
+        msg_count_ele.text(parseInt(msg_count_ele.text()) + 1);
+        msg_count_ele.removeClass("hide");
+
+        var msg_sender_name = $("#contact-list ul li[contact-id='"+ msg.from_id +"']").find(".contact-user").text();
+        var msg_div = "<div class='pull_left other'>" +
+        "<div class=''> <img class='avatar' src='https://img3.doubanio.com/icon/u37044537-304.jpg'></div>" +
+          "<div class='content'><h5 style='margin-top: 1px;'>"+ msg_sender_name + msg.dtime +"</h5> " +
+          "<div class='bubble bubble-primary'><div class='bubble-content'><div class='plain'><pre>" + msg.msg + "</pre></div></div></div></div>" +
+        "</div>";
+        var old_session_content = SessionHandle(msg.from_id, msg.contact_type, 'loads');
+        var new_session_content = old_session_content + msg_div;
+        all_dialog_sessions[msg.contact_type][msg.from_id] = new_session_content;
       }
-      console.log(msg.from_id);
-      console.log(index);
+      console.log("msg: " + msg);
+      console.log("index: " + index);
     });//$.each End
+    GetNewMsg();
   });//$.get End
 }
 
@@ -151,35 +167,42 @@ function OpenChatWindow(obj){
   $(obj).siblings().removeClass("active");
   var current_uid = $(obj).attr("contact-id");
   var current_dialog_type = $(obj).attr("contact-type");
-  var current_contact_name = $(obj).text();
-  var current_dialog_count = $(obj).find("span").text();
-  console.log(current_uid);
-  console.log(current_dialog_type);
-  console.log('--++++++-')
-  console.log(current_dialog_count);
-  console.log('---')
-  console.log(current_contact_name);
-  var dialog_head_html = "<span contact-id='"+ current_uid +"' contact-type='"+ current_dialog_type +"' >"+ current_contact_name + "</span>";
+  var current_contact_name = $(obj).find(".contact-user").text();
+  var current_dialog_count = $(obj).find(".badge").text();
+  console.log("Current_uid: " + current_uid);
+  console.log("current_dialog_type: " + current_dialog_type);
+  console.log("current_dialog_count: " + current_dialog_count);
+  console.log("current_contact_name: " + current_contact_name);
+
+  if($("#panel-heading span").length > 0){
+    var old_session_id = $("#panel-heading span").attr("contact-id");
+    var old_session_type = $("#panel-heading span").attr("contact-type");
+    SessionHandle(old_session_id, old_session_type, 'dumps');
+  }
+  var current_box_dialog = SessionHandle(current_uid, current_dialog_type, 'loads');
+  $('#dialog-box-content').html(current_box_dialog);
+
+  var dialog_head_html = "<span contact-id='"+ current_uid +"' contact-type='"+ current_dialog_type +"' ><b>"+ current_contact_name + "</b></span>";
   $('#panel-heading').html(dialog_head_html);
+
+  var msg_count_ele = $("#contact-list ul li[contact-id='"+ current_uid +"']").find(".badge");
+  msg_count_ele.text(0);
+  msg_count_ele.addClass("hide");
+}
+
+function SessionHandle(contact_id, contact_type, action){
+  if(action == 'dumps'){
+    var current_dialog_content = $("#dialog-box-content").html();
+    all_dialog_sessions[contact_type][contact_id] = current_dialog_content;
+  }else if(action == 'loads'){
+    var new_dialog_content = '';
+    if(all_dialog_sessions[contact_type].hasOwnProperty(contact_id)){
+      new_dialog_content = all_dialog_sessions[contact_type][contact_id];
+    }
+    return new_dialog_content;
+  }
 }
 
 
-
-
-
-
-
-function SwitchChatBox(obj){
-  var current_uid = $(obj).attr("contact-id");
-  var current_dialog_type = $(obj).attr("contact-type");
-  var current_contact_name = $(obj).text();
-  var current_dialog_count = $(obj).children("span").text();
-  console.log(current_uid);
-  console.log(current_dialog_type);
-  console.log(current_dialog_count);
-  console.log(current_contact_name);
-  var dialog_head_html = "<b><span contact-id='"+ current_dialog_type +"' >"+ current_contact_name + "</span></b>";
-  $('#panel-heading').html(dialog_head_html);
-}
 </script>
 {% endblock %}
