@@ -1,0 +1,131 @@
+#encoding:utf-8
+from itertools import izip
+from pyquery import PyQuery as pq
+import requests
+import json
+import re
+import time
+import argparse
+import sys
+import codecs
+import redis
+
+#redis_conn = redis.StrictRedis('192.168.47.9')
+
+def get_data(url, params=None):
+  s = requests.session()
+  headers = {
+    'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 9_1 like Mac OS X) AppleWebKit/601.1.46 (KHTML, like Gecko) Version/9.0 Mobile/13B143 Safari/601.1',
+    'Referer': 'http://edu.51cto.com/wap.php',
+    'Content-Type': 'text/html;charset=UTF-8'
+  }
+  try:
+    if params:
+      r = requests.get(url, params=params, headers=headers)
+    else:
+      r = requests.get(url, headers=headers)
+    data = r.text
+  except Exception,e:
+    print "Requests Error %s" %e
+    data = "null"
+
+  return data
+
+def get_course_data(course_id):
+  course_id = course_id
+  course_payload = {'do':'course', 'm':'courseInfo', 'courseid': course_id}
+  course_url = 'http://edu.51cto.com/wap.php/index/index#!/Course/%s' %course_id
+  #course_data = get_data(course_url, course_payload)
+  course_data = get_data(course_url)
+
+  jq = pq(course_data)
+  print jq
+  params = jq('.list-block ul li')
+  big_title = jq('.content-block.LesstionInfo.hasLine h2')[0].text
+  link = params('a')
+  title = params('.item-title')
+  course_dict = []
+  for info in izip(link, title):
+    link = info[0].attrib['href']
+    title = info[1].text
+    course_dict.append((link,title))
+  print (big_title, course_dict)
+  return (big_title, course_dict)
+
+def get_lesson_data(courseid):
+  data = get_course_data(courseid)
+  #big_title, data = get_course_data(courseid)
+  base_url = 'http://edu.51cto.com/wap.php'
+  lesson_dict = {}
+  lesson_dict['courseid'] = courseid
+  lesson_dict['title'] = big_title
+  lesson_dict['url'] = {}
+  num = 1
+  for item in data:
+    link = item[0]
+    title = item[1]
+    params = {}
+    for i in link.split('?')[1].split('&'):
+      k = i.split('=')
+      params[k[0]] = k[1]
+    lesson_data = get_data(base_url, params)
+    pattern = re.compile('http://.+\.mp4+[^"]+')
+    try:
+      lesson_video_url = pattern.search(lesson_data).group()
+      lesson_dict['url'][num] = [lesson_video_url, title]
+      num += 1
+    except Exception,e:
+      print "Re Error %s" %e
+    time.sleep(0.2)
+  return lesson_dict
+
+if __name__ == '__main__':
+  save_dir = '/cygdrive/d/Edu_51cto/Download_link'
+  parser = argparse.ArgumentParser(description='Get 51cto video list information')
+  parser.add_argument('-n', action='store', dest='course_num', type=int, help='Store a course id')
+  parser.add_argument('-s', action="store_true", dest="save", default=False, help="Save in a file")
+  arg = parser.parse_args()
+
+  if not arg.course_num:
+    parser.print_help()
+    sys.exit(1)
+
+
+  id = arg.course_num
+  save = arg.save
+
+  """
+  save=100
+  ids = []
+
+  for id in redis_conn.keys():
+    id = int(id)
+    if id in ids:
+      continue
+  """
+  data = get_lesson_data(id)
+  if save:
+    try:
+      file_name = "%s/%s_%s.vim" %(save_dir, data['courseid'], data['title'])
+      with codecs.open(file_name, 'w', 'utf-8-sig') as fd:
+        fd.write(u'%d\n' %data['courseid'])
+        fd.write(u'%s\n' %data['title'])
+        for k, v in data['url'].items():
+          course_id = v[0].split('/')[-2]
+          hex_id = v[0].split('/')[-1].split('_')[0]
+          num = v[0].split('_')[-1].split('?')[0].split('.')[0]
+          fd.write(u"%s +/- %s = %d / %d -- %s\n" %(course_id, int(hex_id, 16), int(course_id)+int(hex_id,16), int(course_id)-int(hex_id,16), num))
+        for i in data['url']:
+          fd.write(u"%s\n" %data['url'][i][1])
+          fd.write(u"%s\n" %data['url'][i][0])
+        fd.write(u"%s" %json.dumps(data, ensure_ascii=False, indent=2, sort_keys=True, separators=(',',':')))
+    except Exception, e:
+      print "Exception %s" %e
+
+  print data['courseid']
+  print data['title']
+  for i in data['url']:
+    print data['url'][i][1]
+    print data['url'][i][0]
+  print '*'*100
+  print json.dumps(data, ensure_ascii=False, indent=2, sort_keys=True, separators=(',',':'))

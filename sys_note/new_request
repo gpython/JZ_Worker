@@ -1,0 +1,146 @@
+#encoding:utf-8
+import requests
+import json
+import re
+import time
+import argparse
+import sys
+import os
+import codecs
+
+#redis_conn = redis.StrictRedis('192.168.47.9')
+BASE_URL    = 'http://edu.51cto.com/wap.php'
+course_url  = 'http://edu.51cto.com/wap.php/course/catalog'
+play_url    = 'http://edu.51cto.com/wap.php/course/play'
+courseinfo_url = 'http://edu.51cto.com/wap.php/course/courseinfo'
+save_dir    = '/cygdrive/d/Edu_51cto/Download_link'
+course_summary = {}
+s = requests.session()
+
+def json_dumps(data):
+  return json.dumps(data, ensure_ascii=False, sort_keys=True, indent=2, separators=(',', ':'))
+
+def get_data(url, params=None, method='GET'):
+  time.sleep(2)
+  headers = {
+    'Accept': 'application/json, text/plain, */*',
+    'Accept-Encoding': 'gzip, deflate',
+    'Accept-Language': 'zh-CN,zh;q=0.8',
+    'Connection': 'keep-alive',
+    'Content-Type': 'application/x-www-form-urlencoded',
+    'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 9_1 like Mac OS X) AppleWebKit/601.1.46 (KHTML, like Gecko) Version/9.0 Mobile/13B143 Safari/601.1',
+    'Host': 'edu.51cto.com',
+    'Origin': 'http://edu.51cto.com',
+    'Referer': 'http://edu.51cto.com/wap.php/index/index',
+    'X-Requested-With': 'XMLHttpRequest'
+  }
+  try:
+    if method == 'GET':
+      if params:
+        r = s.get(url, params=params, headers=headers)
+      else:
+        r = s.get(url, headers=headers)
+    else:
+      if params:
+        r = s.post(url, data=params, headers=headers)
+      else:
+        r = s.post(url, headers=headers)
+    data = json.loads(r.text)
+  except Exception,e:
+    print "Requests Error %s" %e
+    data = {'data':[]}
+  return data
+
+def get_catalog(course_id, page_num=1):
+  course_id = course_id
+  course_payload = {'course_id': course_id, 'page': page_num, 'token': ''}
+  data = get_data(course_url, params=course_payload, method='POST')
+
+  play_payload = {'course_id': course_id}
+  course_info = data['data'].get('otherLesson', []) or data['data'].get('chaperLesson', [])
+  page_total = data['data'].get('page_total')
+  current_page_num = data['data'].get('page', 1)
+
+  if int(page_total) == int(page_num):
+    if len(course_info):
+      for i in course_info:
+        lesson_id = i['lesson_id']
+        print lesson_id
+        play_payload.update({'lesson_id': lesson_id})
+        play_data = get_data(play_url, params=play_payload, method='POST')
+        time.sleep(0.5)
+        i['data'] = play_data.get('data')
+    course_summary['%s_%s' %(course_id, current_page_num)] = course_info
+  else:
+    page_num = current_page_num + 1
+    get_catalog(course_id, page_num)
+    if len(course_info):
+      for i in course_info:
+        lesson_id = i['lesson_id']
+        print lesson_id
+        play_payload.update({'lesson_id': lesson_id})
+        play_data = get_data(play_url, params=play_payload, method='POST')
+        time.sleep(0.5)
+        i['data'] = play_data.get('data')
+    course_summary['%s_%s' %(course_id, current_page_num)] = course_info
+  return course_summary
+
+def get_course_title(course_id):
+  course_payload = {'course_id': course_id, 'token': ''}
+  data = get_data(courseinfo_url, params=course_payload, method='POST')
+  return data['data']['course_data']['title']
+
+def parse(data, course_id, course_title, save=False):
+  x_data =json.dumps(data, ensure_ascii=False, indent=2, sort_keys=True, separators=(',',':'))
+  name_info = {}
+  x_str = ''
+  for i in data:
+    for info in data[i]:
+      act_name = "%s_%s.mp4" %(info['data']['lesson_id'], info['data']['title'].replace(' ', '_'))
+      download_url = info['data']['mp4']
+      raw_name = info['data']['mp4'].split('/')[-1].split('?')[0].strip('')
+      name_info[raw_name] = act_name
+      x_str += '%s\n%s\n' %(act_name, download_url)
+  print x_str
+  x = json.dumps(name_info, ensure_ascii=False, indent=2, sort_keys=True, separators=(',',':'))
+  print x
+  if save:
+    rename_str = """
+#############################################
+#encoding:utf-8
+import os
+x = %s
+for i in x:
+  try:
+    os.rename(i, x[i])
+  except Exception, e:
+    print "Rename Error: ", i
+#############################################
+    """ %x
+    save_file = "%s/%s_%s.txt" %(save_dir, course_id, course_title)
+    with codecs.open(save_file, 'w', 'utf-8-sig') as fd:
+      fd.write("%s\n" %x)
+      fd.write("%s\n" %rename_str)
+      fd.write("%s" %x_str)
+      fd.write("%s\n" %x_data)
+
+if __name__ == '__main__':
+  parser = argparse.ArgumentParser(description='Get 51cto video list information')
+  parser.add_argument('-n', action='store', dest='course_num', type=int, help='Store a course id')
+  parser.add_argument('-s', action="store_true", dest="save", default=False, help="Save in a file")
+  arg = parser.parse_args()
+
+  if not arg.course_num:
+    parser.print_help()
+    sys.exit(1)
+
+  id = arg.course_num
+  save = arg.save
+
+  if save and not os.path.exits(save_dir):
+    os.makedirs(save_dir)
+
+  course_title = get_course_title(id)
+  print course_title
+  data = get_catalog(id)
+  parse(data, id, course_title, save)
